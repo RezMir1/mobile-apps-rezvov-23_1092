@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reg</title>
+    <style>
+      body {
+        width: 100vw;
+        height: 100vh;
+      }
+      #loginPanel {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      input {
+        margin: 0 70px;
+      }
+      button {
+        margin-top: 20px;
+        padding: 5px;
+        font-size: 12px;
+        background: #11b32c;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loginPanel">
+      <label for="username">Логин</label>
+      <input type="text" name="username" id="username" />
+      <label for="password">Пароль</label>
+      <input type="password" name="password" id="password" />
+      <button id="registerBtn">Регистрация</button>
+      <button id="googleLoginBtn">Войти через Google</button>
+      <button id="githubLoginBtn">Войти через GitHub</button>
+      <button id="confirmLoginBtn" hidden>
+        Подтвердить существующий аккаунт
+      </button>
+      <h2>Supabase</h2>
+      <ul id="supabaseUsers"></ul>
+      <h2>Firebase</h2>
+      <ul id="firebaseUsers"></ul>
+    </div>
+    <div id="userPanel" hidden>
+      <p>Вы вошли как: <span id="userName"></span></p>
+      <button id="logoutBtn">Выйти</button>
+    </div>
+  </body>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const registerBtn = document.getElementById("registerBtn");
+
+    registerBtn.addEventListener("click", handleRegistration);
+    const client = window.supabase.createClient(
+      "https://ibnbydumysnmroinqqie.supabase.co",
+      "sb_publishable__udq-cEPXzYctEn5LWcw5g_OMi2YIh8",
+    );
+    async function loadInSupabase() {
+      const usersList = document.getElementById("supabaseUsers");
+      usersList.innerHTML = "";
+      const { data, error } = await client.from("users").select("id, username");
+      if (error) {
+        console.error("Ошибка загрузки:", error.message);
+        return;
+      }
+      data.forEach((user) => {
+        let li = document.createElement("li");
+        li.textContent = user.username;
+        usersList.appendChild(li);
+      });
+
+      console.log(data);
+    }
+    async function handleRegistration() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      console.log("Логин:", username);
+      console.log("Пароль:", password);
+      const { error } = await client
+        .from("users")
+        .insert({ username, password });
+
+      if (error) {
+        console.error("Ошибка Supabase:", error.message);
+      } else {
+        console.log("Пользователь успешно добавлен!");
+        await loadInSupabase();
+      }
+    }
+    async function confirmExistingAccount() {
+      if (!pendingCredential || !pendingProvider || !pendingEmail) return;
+
+      try {
+        const result = await signInWithPopup(auth, pendingProvider);
+
+        if (result.user.email?.toLowerCase() !== pendingEmail.toLowerCase()) {
+          console.error("Выбран другой аккаунт!");
+          return;
+        }
+
+        const linked = await linkWithCredential(result.user, pendingCredential);
+
+        console.log("Аккаунты успешно связаны!");
+        console.log("UID:", linked.user.uid);
+        console.log("Провайдеры:", linked.user.providerData);
+
+        pendingCredential = null;
+        pendingEmail = null;
+        pendingProvider = null;
+
+        document.getElementById("confirmLoginBtn").hidden = true;
+      } catch (error) {
+        console.error("Ошибка подтверждения:", error.code);
+      }
+    }
+  </script>
+  <script type="module" src="./firebase.js"></script>
+</html>
