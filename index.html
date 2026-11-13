@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,12 +8,17 @@
       body {
         width: 100vw;
         height: 100vh;
+        margin: 0;
+        padding: 0;
       }
       #loginPanel {
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
+      }
+
+      [hidden] {
+        display: none !important;
       }
       input {
         margin: 0 70px;
@@ -38,11 +43,14 @@
       <button id="confirmLoginBtn" hidden>
         Подтвердить существующий аккаунт
       </button>
+    </div>
+    <div id="dataPanel">
       <h2>Supabase</h2>
       <ul id="supabaseUsers"></ul>
       <h2>Firebase</h2>
       <ul id="firebaseUsers"></ul>
     </div>
+
     <div id="userPanel" hidden>
       <p>Вы вошли как: <span id="userName"></span></p>
       <button id="logoutBtn">Выйти</button>
@@ -115,6 +123,9 @@
         console.error("Ошибка подтверждения:", error.code);
       }
     }
+    loadInSupabase().catch((error) => {
+      console.error("Не удалось загрузить пользователей Supabase:", error);
+    });
   </script>
   <script type="module" src="./firebase.js"></script>
 </html>
